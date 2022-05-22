@@ -45,16 +45,15 @@ async def fetch_recent_audit_log_entry(client: nextcord.Client, guild: nextcord.
     async for entry in guild.audit_logs(limit=1, action=action):
         
         delta = datetime.datetime.utcnow() - entry.created_at
-        if delta < datetime.timedelta(seconds=10):
-            if target is not None and entry.target != target:
-                continue
-            
+        if delta < datetime.timedelta(seconds=10) and (
+            target is None or entry.target == target
+        ):
             return entry
-        
+
     if retry > 0:
         await asyncio.sleep(SLEEP_FOR)
         return await fetch_recent_audit_log_entry(client, guild, target=target, action=action, retry=retry - 1)
-    
+
     return None
 
 def listens_for(*events: str) -> Callable:
